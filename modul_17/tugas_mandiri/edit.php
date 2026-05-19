@@ -1,0 +1,87 @@
+<?php
+session_start();
+if (!isset($_SESSION['user']) || $_SESSION['level'] != 'admin') {
+    header("Location: tampil.php");
+    exit;
+}
+include "koneksi.php";
+
+$id     = intval($_GET['id']);
+$sql    = "SELECT * FROM news WHERE id = $id";
+$result = $conn->query($sql);
+
+if ($result->num_rows == 0) {
+    echo "<div class='container mt-4'><div class='alert alert-danger'>Data tidak ditemukan!</div></div>";
+    exit;
+}
+$row = $result->fetch_assoc();
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Berita</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f5f5f5; font-family: Arial, sans-serif; }
+        .navbar { background-color: #dc3545 !important; }
+        .navbar-brand { font-weight: bold; color: white !important; }
+        .form-card {
+            background: white; border-radius: 8px;
+            padding: 25px; max-width: 650px;
+            margin: 30px auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .form-card h4 { color: #dc3545; font-weight: bold; margin-bottom: 20px; }
+        .gambar-lama { width: 120px; border-radius: 5px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <span class="navbar-brand">🗞️ Portal Berita</span>
+        <div class="ms-auto">
+            <a href="tampil.php" class="btn btn-outline-light btn-sm">← Kembali</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-card">
+        <h4>✏️ Edit Berita</h4>
+        <form action="proses_edit.php" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="<?= $row['id'] ?>">
+            <input type="hidden" name="image_lama" value="<?= $row['image'] ?>">
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Judul Berita</label>
+                <input type="text" name="title" class="form-control" value="<?= htmlspecialchars($row['title']) ?>" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Konten</label>
+                <textarea name="content" class="form-control" rows="5" required><?= htmlspecialchars($row['content']) ?></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Author</label>
+                <input type="text" name="author" class="form-control" value="<?= htmlspecialchars($row['author']) ?>" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Gambar</label>
+                <?php if ($row['image']): ?>
+                    <div class="mb-2">
+                        <img src="upload/<?= $row['image'] ?>" class="gambar-lama">
+                        <div class="form-text">Gambar saat ini.</div>
+                    </div>
+                <?php endif; ?>
+                <input type="file" name="image" class="form-control" accept="image/*">
+                <div class="form-text">Kosongkan jika tidak ingin ganti gambar.</div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning">💾 Simpan Perubahan</button>
+                <a href="tampil.php" class="btn btn-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
